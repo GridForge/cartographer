@@ -90,10 +90,10 @@ Designed the SQLite FTS5 persistence layer for `context_store`/`context_query` t
 
 ## Decisions Made
 
-### D-007: SQLite-only (no JSONL for context)
-- **Context**: Codex recommended dual-store (JSONL + SQLite). Claude specialist recommended SQLite-only since audit JSONL already provides observability.
-- **Decision**: SQLite-only. The audit ledger at `~/.local/share/cartographer/logs/audit.jsonl` already records `ContextStoreWrite` events for every store operation — this IS the implicit JSONL archive.
-- **Rationale**: Dual-store adds write amplification and consistency concerns for zero benefit. If SQLite corrupts, audit JSONL contains the metadata (hashes, tags, timestamps) to diagnose what was lost.
+### D-007: SQLite-only for context persistence (audit uses JSONL separately)
+- **Context**: Codex recommended dual-store (JSONL + SQLite). Claude specialist recommended SQLite-only since audit JSONL already provides observability. Note: D-002 established JSONL+SQLite for the *audit telemetry* system. This decision is about the *context store* specifically.
+- **Decision**: Context store uses SQLite-only. The audit telemetry system (separate subsystem, per D-002/ADR-0004) continues using JSONL. Two different storage domains, two different strategies.
+- **Rationale**: Context needs queryable FTS5 search (SQLite). Audit needs append-only tamper evidence (JSONL). Different requirements → different stores.
 - **Dissent**: Codex's dual-store argument (crash recovery, rebuildability) has merit for mission-critical systems. For a local dev tool, SQLite WAL mode is sufficient. Revisit if data loss reports emerge.
 - **Status**: Approved by Judge at 96%
 

@@ -13,10 +13,10 @@ No expedition begins without an engineering log entry. No log entry closes witho
 ## Active Map
 
 ```
-BASECAMP ✓
-  └── DEEP-STORE ✓
-        └── CITADEL ✓
-              └── RAMPART ✓
+BASECAMP (implemented)
+  └── DEEP-STORE (implemented)
+        └── CITADEL (implemented)
+              └── RAMPART (implemented, CI green)
                     └── FIRST-LIGHT ← next
                     ├── WATCHTOWER
                     ├── LENS
@@ -29,10 +29,10 @@ BASECAMP ✓
 
 | Expedition | Territory | Entry Criteria | Exit Criteria | Status |
 |------------|-----------|---------------|---------------|--------|
-| BASECAMP | Audit telemetry, MCP server, Python MLX service skeleton, engineering discipline, 10 commandments | None | MCP server responds to JSON-RPC, audit events emit, 51+ tests pass | **Complete** |
-| DEEP-STORE | SQLite FTS5 context persistence — Claude Code's memory layer | BASECAMP complete | `context_store` persists to SQLite, `context_query` returns FTS5 results, 8 store tests pass | **Complete** |
-| CITADEL | CI pipeline — automated regression detection for full Rust workspace + MLX-free Python tests | DEEP-STORE complete | Green CI on main: fmt + clippy + `cargo test --workspace` + `pytest test_audit.py`. `pyproject.toml` MLX optional. | **Complete** |
-| RAMPART | Fix 5 skipped integration tests + EPIPE production bug — sandbox config, temp dir collisions, python setup | CITADEL complete | All `--skip` flags removed. Full `cargo test --workspace` green on ubuntu-latest. EPIPE bug fixed. | **Complete** |
+| BASECAMP | Audit telemetry, MCP server, Python MLX service skeleton, engineering discipline, 10 commandments | None | MCP server responds to JSON-RPC, audit events emit, Rust + Python tests pass | Implemented |
+| DEEP-STORE | SQLite FTS5 context persistence — Claude Code's memory layer | BASECAMP complete | `context_store` persists to SQLite, `context_query` returns FTS5 results, store tests pass | Implemented |
+| CITADEL | CI pipeline — automated regression detection for full Rust workspace + MLX-free Python tests | DEEP-STORE complete | Green CI: fmt + clippy + `cargo test --workspace` + `pytest test_audit.py`. MLX optional in pyproject.toml. | Implemented |
+| RAMPART | Fix 5 skipped integration tests + EPIPE production bug — sandbox config, temp dir collisions, python setup | CITADEL complete | All `--skip` flags removed. Full `cargo test --workspace` green on ubuntu-latest. EPIPE bug fixed. | Implemented |
 | FIRST-LIGHT | Download models, register MCP in Claude Code settings, validate end-to-end: Claude Code → MCP → Python inference → response | RAMPART complete | Claude Code discovers Cartographer tools. `generate` returns Gemma output. `route` classifies a request. Full round-trip works in a live session. | Planned |
 | WATCHTOWER | Background monitoring — file watcher triggers `cargo test`, git tracker polls changes, context budget warns on threshold | FIRST-LIGHT complete | File save triggers test run, results stored in context. `monitor_status` returns last test result and recent git changes. | Planned |
 | LENS | Pre-processing pipeline — bundled PreToolUse hook, Gemma summarizes large files, error triage, diff analysis | FIRST-LIGHT complete | Claude Code reads a >500 line file, hook fires, summary prepended to context. Token savings measurable. | Planned |

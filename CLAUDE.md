@@ -29,7 +29,8 @@ CI does not test MLX inference paths (requires Apple Silicon). MLX validation is
 - `docs/adr/` — Architecture Decision Records (numbered, immutable once accepted)
 - `docs/engineering-log/` — Session-level build decisions, council findings, verification evidence
 - `src/` — Python porting workspace (legacy, compatibility)
-- `tests/` — validation surfaces
+- `python/tests/` — Python test suite (audit, middleware, KV manager, schemas)
+- `tests/` — legacy validation surfaces
 
 ## Engineering log discipline (MANDATORY)
 

@@ -92,9 +92,7 @@ RPN 120 on failure mode 3 is the accepted gap. CI covers compilation parity, not
 | `python -m pytest tests/test_audit.py -v` | 27/27 passed (0.12s) |
 
 ## Open Items
-- CI workflow not yet pushed to GitHub — needs commit + push to verify green on runner
-- Old `rust-ci.yml` deleted locally, needs to be committed
-- Council validation of this log entry pending after CI green
+*All resolved.* CI is pushed and green. `rust-ci.yml` deleted. Test skips resolved by RAMPART.
 
 ## Post-CITADEL Note
 CITADEL initially shipped with 5 shell-spawning integration tests skipped (FMEA failure mode #3, RPN 120). Expedition RAMPART subsequently fixed all 5 tests and removed all `--skip` flags. CI now runs full `cargo test --workspace` with zero exclusions. The initial CI skip strategy (commits 284cea6→f52c78f) was an interim measure resolved by RAMPART (commit 899eefe + 9ccd22d).
