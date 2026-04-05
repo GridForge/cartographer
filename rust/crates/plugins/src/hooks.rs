@@ -339,7 +339,13 @@ impl CommandWithStdin {
         let mut child = self.command.spawn()?;
         if let Some(mut child_stdin) = child.stdin.take() {
             use std::io::Write as _;
-            child_stdin.write_all(stdin)?;
+            // Ignore BrokenPipe — the child may exit before reading stdin
+            // (e.g., hook scripts that use printf without reading input).
+            if let Err(e) = child_stdin.write_all(stdin) {
+                if e.kind() != std::io::ErrorKind::BrokenPipe {
+                    return Err(e);
+                }
+            }
         }
         child.wait_with_output()
     }
@@ -351,14 +357,14 @@ mod tests {
     use crate::{PluginManager, PluginManagerConfig};
     use std::fs;
     use std::path::{Path, PathBuf};
-    use std::time::{SystemTime, UNIX_EPOCH};
-
     fn temp_dir(label: &str) -> PathBuf {
-        let nanos = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("time should be after epoch")
-            .as_nanos();
-        std::env::temp_dir().join(format!("plugins-hook-runner-{label}-{nanos}"))
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "plugins-hook-runner-{label}-{}-{id}",
+            std::process::id()
+        ))
     }
 
     fn write_hook_plugin(
@@ -368,7 +374,7 @@ mod tests {
         post_message: &str,
         failure_message: &str,
     ) {
-        fs::create_dir_all(root.join(".claude-plugin")).expect("manifest dir");
+        fs::create_dir_all(root.join(".carto-plugins")).expect("manifest dir");
         fs::create_dir_all(root.join("hooks")).expect("hooks dir");
         fs::write(
             root.join("hooks").join("pre.sh"),
@@ -386,7 +392,7 @@ mod tests {
         )
         .expect("write failure hook");
         fs::write(
-            root.join(".claude-plugin").join("plugin.json"),
+            root.join(".carto-plugins").join("plugin.json"),
             format!(
                 "{{\n  \"name\": \"{name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"hook plugin\",\n  \"hooks\": {{\n    \"PreToolUse\": [\"./hooks/pre.sh\"],\n    \"PostToolUse\": [\"./hooks/post.sh\"],\n    \"PostToolUseFailure\": [\"./hooks/failure.sh\"]\n  }}\n}}"
             ),

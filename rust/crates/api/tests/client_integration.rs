@@ -82,11 +82,11 @@ async fn send_message_posts_json_and_parses_response() {
     );
     assert_eq!(
         request.headers.get("user-agent").map(String::as_str),
-        Some("claude-code/0.1.0")
+        Some("cartographer/0.1.0")
     );
     assert_eq!(
         request.headers.get("anthropic-beta").map(String::as_str),
-        Some("claude-code-20250219,prompt-caching-scope-2026-01-05")
+        Some("cartographer-20250219,prompt-caching-scope-2026-01-05")
     );
     let body: serde_json::Value =
         serde_json::from_str(&request.body).expect("request body should be json");
@@ -99,7 +99,7 @@ async fn send_message_posts_json_and_parses_response() {
     assert_eq!(body["tool_choice"]["type"], json!("auto"));
     assert_eq!(
         body["betas"],
-        json!(["claude-code-20250219", "prompt-caching-scope-2026-01-05"])
+        json!(["cartographer-20250219", "prompt-caching-scope-2026-01-05"])
     );
 }
 
@@ -131,9 +131,9 @@ async fn send_message_applies_request_profile_and_records_telemetry() {
 
     let client = AnthropicClient::new("test-key")
         .with_base_url(server.base_url())
-        .with_client_identity(ClientIdentity::new("claude-code", "9.9.9").with_runtime("rust-cli"))
+        .with_client_identity(ClientIdentity::new("cartographer", "9.9.9").with_runtime("rust-cli"))
         .with_beta("tools-2026-04-01")
-        .with_extra_body_param("metadata", json!({"source": "clawd-code"}))
+        .with_extra_body_param("metadata", json!({"source": "cartographer"}))
         .with_session_tracer(SessionTracer::new("session-telemetry", sink.clone()));
 
     let response = client
@@ -147,19 +147,19 @@ async fn send_message_applies_request_profile_and_records_telemetry() {
     let request = captured.first().expect("server should capture request");
     assert_eq!(
         request.headers.get("anthropic-beta").map(String::as_str),
-        Some("claude-code-20250219,prompt-caching-scope-2026-01-05,tools-2026-04-01")
+        Some("cartographer-20250219,prompt-caching-scope-2026-01-05,tools-2026-04-01")
     );
     assert_eq!(
         request.headers.get("user-agent").map(String::as_str),
-        Some("claude-code/9.9.9")
+        Some("cartographer/9.9.9")
     );
     let body: serde_json::Value =
         serde_json::from_str(&request.body).expect("request body should be json");
-    assert_eq!(body["metadata"]["source"], json!("clawd-code"));
+    assert_eq!(body["metadata"]["source"], json!("cartographer"));
     assert_eq!(
         body["betas"],
         json!([
-            "claude-code-20250219",
+            "cartographer-20250219",
             "prompt-caching-scope-2026-01-05",
             "tools-2026-04-01"
         ])

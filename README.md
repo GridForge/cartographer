@@ -1,191 +1,106 @@
-# Rewriting Project Claw Code
+# Cartographer
 
-<p align="center">
-  <strong>⭐ The fastest repo in history to surpass 50K stars, reaching the milestone in just 2 hours after publication ⭐</strong>
-</p>
+A local intelligence layer for Claude Code. Persistent memory, background monitoring, and pre-processing — powered by Gemma 4 and FunctionGemma on Apple Silicon.
 
-<p align="center">
-  <a href="https://star-history.com/#instructkr/claw-code&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=instructkr/claw-code&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=instructkr/claw-code&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=instructkr/claw-code&type=Date" width="600" />
-    </picture>
-  </a>
-</p>
+## What it does
 
-<p align="center">
-  <img src="assets/clawd-hero.jpeg" alt="Claw" width="300" />
-</p>
+Claude Code's context window compacts over long sessions, losing detail. Cartographer fixes this by running local models that persist memory, pre-process files, and monitor your project — all exposed to Claude Code via MCP.
 
-<p align="center">
-  <strong>Better Harness Tools, not merely storing the archive of leaked Claude Code</strong>
-</p>
+**The experience:** You sit down, Claude already knows what you're doing, and it stays knowing for as long as you need it to.
 
-<p align="center">
-  <a href="https://github.com/sponsors/instructkr"><img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github&style=for-the-badge" alt="Sponsor on GitHub" /></a>
-</p>
+## Architecture
 
-> [!IMPORTANT]
-> **Rust port is now in progress** on the [`dev/rust`](https://github.com/instructkr/claw-code/tree/dev/rust) branch and is expected to be merged into main today. The Rust implementation aims to deliver a faster, memory-safe harness runtime. Stay tuned — this will be the definitive version of the project.
-
-> If you find this work useful, consider [sponsoring @instructkr on GitHub](https://github.com/sponsors/instructkr) to support continued open-source harness engineering research.
-
----
-
-## Backstory
-
-At 4 AM on March 31, 2026, I woke up to my phone blowing up with notifications. The Claude Code source had been exposed, and the entire dev community was in a frenzy. My girlfriend in Korea was genuinely worried I might face legal action from Anthropic just for having the code on my machine — so I did what any engineer would do under pressure: I sat down, ported the core features to Python from scratch, and pushed it before the sun came up.
-
-The whole thing was orchestrated end-to-end using [oh-my-codex (OmX)](https://github.com/Yeachan-Heo/oh-my-codex) by [@bellman_ych](https://x.com/bellman_ych) — a workflow layer built on top of OpenAI's Codex ([@OpenAIDevs](https://x.com/OpenAIDevs)). I used `$team` mode for parallel code review and `$ralph` mode for persistent execution loops with architect-level verification. The entire porting session — from reading the original harness structure to producing a working Python tree with tests — was driven through OmX orchestration.
-
-The result is a clean-room Python rewrite that captures the architectural patterns of Claude Code's agent harness without copying any proprietary source. I'm now actively collaborating with [@bellman_ych](https://x.com/bellman_ych) — the creator of OmX himself — to push this further. The basic Python foundation is already in place and functional, but we're just getting started. **Stay tuned — a much more capable version is on the way.**
-
-https://github.com/instructkr/claw-code
-
-![Tweet screenshot](assets/tweet-screenshot.png)
-
-## The Creators Featured in Wall Street Journal For Avid Claude Code Fans
-
-I've been deeply interested in **harness engineering** — studying how agent systems wire tools, orchestrate tasks, and manage runtime context. This isn't a sudden thing. The Wall Street Journal featured my work earlier this month, documenting how I've been one of the most active power users exploring these systems:
-
-> AI startup worker Sigrid Jin, who attended the Seoul dinner, single-handedly used 25 billion of Claude Code tokens last year. At the time, usage limits were looser, allowing early enthusiasts to reach tens of billions of tokens at a very low cost.
->
-> Despite his countless hours with Claude Code, Jin isn't faithful to any one AI lab. The tools available have different strengths and weaknesses, he said. Codex is better at reasoning, while Claude Code generates cleaner, more shareable code.
->
-> Jin flew to San Francisco in February for Claude Code's first birthday party, where attendees waited in line to compare notes with Cherny. The crowd included a practicing cardiologist from Belgium who had built an app to help patients navigate care, and a California lawyer who made a tool for automating building permit approvals using Claude Code.
->
-> "It was basically like a sharing party," Jin said. "There were lawyers, there were doctors, there were dentists. They did not have software engineering backgrounds."
->
-> — *The Wall Street Journal*, March 21, 2026, [*"The Trillion Dollar Race to Automate Our Entire Lives"*](https://lnkd.in/gs9td3qd)
-
-![WSJ Feature](assets/wsj-feature.png)
-
----
-
-## Porting Status
-
-The main source tree is now Python-first.
-
-- `src/` contains the active Python porting workspace
-- `tests/` verifies the current Python workspace
-- the exposed snapshot is no longer part of the tracked repository state
-
-The current Python workspace is not yet a complete one-to-one replacement for the original system, but the primary implementation surface is now Python.
-
-## Why this rewrite exists
-
-I originally studied the exposed codebase to understand its harness, tool wiring, and agent workflow. After spending more time with the legal and ethical questions—and after reading the essay linked below—I did not want the exposed snapshot itself to remain the main tracked source tree.
-
-This repository now focuses on Python porting work instead.
-
-## Repository Layout
-
-```text
-.
-├── src/                                # Python porting workspace
-│   ├── __init__.py
-│   ├── commands.py
-│   ├── main.py
-│   ├── models.py
-│   ├── port_manifest.py
-│   ├── query_engine.py
-│   ├── task.py
-│   └── tools.py
-├── tests/                              # Python verification
-├── assets/omx/                         # OmX workflow screenshots
-├── 2026-03-09-is-legal-the-same-as-legitimate-ai-reimplementation-and-the-erosion-of-copyleft.md
-└── README.md
+```
+Claude Code (Opus)
+    │
+    ├── MCP stdio ──► context-server (Rust)
+    │                    ├── HTTP ──► MLX Service (Python)
+    │                    │              ├── Gemma 4 26B-A4B (generation)
+    │                    │              └── FunctionGemma 270M (routing)
+    │                    ├── SQLite FTS5 (context persistence)
+    │                    └── Audit ledger (JSONL, hash-chained)
+    │
+    └── Council ──► Codex (read-only review)
+                ──► Gemini (web research)
 ```
 
-## Python Workspace Overview
+**Python** handles inference (MLX-native, Apple Silicon). **Rust** handles MCP orchestration, persistence, and audit telemetry.
 
-The new Python `src/` tree currently provides:
+## Key capabilities
 
-- **`port_manifest.py`** — summarizes the current Python workspace structure
-- **`models.py`** — dataclasses for subsystems, modules, and backlog state
-- **`commands.py`** — Python-side command port metadata
-- **`tools.py`** — Python-side tool port metadata
-- **`query_engine.py`** — renders a Python porting summary from the active workspace
-- **`main.py`** — a CLI entrypoint for manifest and summary output
+| Capability | How it works | Expedition |
+|-----------|-------------|-----------|
+| **Context persistence** | SQLite FTS5 store survives compaction. Claude Code queries past decisions, errors, test results. | DEEP-STORE |
+| **Audit telemetry** | 16 typed events, hash-chaining, cross-process correlation via HTTP headers. Every decision auditable. | BASECAMP |
+| **FunctionGemma routing** | 270M model classifies requests as local/remote/augment/defer. Admits uncertainty rather than guessing. | Planned (FIRST-LIGHT) |
+| **Background monitoring** | File watcher triggers tests, git tracker polls changes, context budget warns on threshold. | Planned (WATCHTOWER) |
+| **Pre-processing** | Gemma summarizes large files before Claude Code reads them. Token budget goes 5x further. | Planned (LENS) |
+| **KV cache compression** | TurboQuant (PolarQuant + QJL) at 3 bits — 256K context in ~2.6GB. | Planned (COMPRESS) |
 
-## Quickstart
+## Repository layout
 
-Render the Python porting summary:
+```
+├── rust/                          # Rust workspace (10 crates)
+│   └── crates/
+│       ├── context-server/        # MCP server — 5 tools, SQLite FTS5, audit
+│       ├── telemetry/             # Audit events, hash-chaining, session tracing
+│       ├── cartographer-cli/      # CLI binary (carto)
+│       ├── api/                   # API client (Anthropic/OpenAI/XAI)
+│       ├── runtime/               # Session, config, permissions, bash, hooks
+│       ├── tools/                 # Built-in tool implementations
+│       ├── plugins/               # Plugin system + hook runner
+│       ├── commands/              # Slash command registry
+│       ├── compat-harness/        # Upstream manifest extraction
+│       └── mock-gemma-service/    # Deterministic mock for parity tests
+├── python/
+│   └── cartographer_mlx/          # MLX inference service (FastAPI)
+│       ├── server.py              # Unified entry point
+│       ├── engine.py              # Model lifecycle
+│       ├── inference.py           # Generation pipeline
+│       ├── router.py              # FunctionGemma dispatch
+│       ├── kv_manager.py          # KV cache as managed resource
+│       ├── audit.py               # Structured audit ledger
+│       └── middleware.py          # Correlation ID propagation
+├── docs/
+│   ├── EXPEDITIONS.md             # Project roadmap
+│   ├── adr/                       # Architecture Decision Records (8)
+│   └── engineering-log/           # Session-level decision logs (D-001 to D-024)
+└── .github/workflows/ci.yml       # CI: Rust + Python on ubuntu-latest
+```
+
+## Verification
 
 ```bash
-python3 -m src.main summary
+# Rust
+cd rust && cargo fmt --all && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
+
+# Python (MLX-free tests — runs on any platform)
+cd python && pip install ".[dev]" && python -m pytest tests/ -v
 ```
 
-Print the current Python workspace manifest:
+## Engineering discipline
 
-```bash
-python3 -m src.main manifest
-```
+This project follows aerospace-grade engineering log discipline (ADR-0008):
+- **10 design commandments** governing all decisions
+- **FMEA analysis** before every expedition
+- **Council reviews** (Codex + Claude sub-agents) for architectural decisions
+- **Adversarial Judge** scoring implementation plans at 95%+ confidence threshold
+- **Engineering logs** with numbered decisions (D-001 to D-024), council findings, and verification evidence
 
-List the current Python modules:
+See `docs/EXPEDITIONS.md` for the full roadmap and `docs/engineering-log/` for the decision trail.
 
-```bash
-python3 -m src.main subsystems --limit 16
-```
+## Target hardware
 
-Run verification:
+MacBook Pro M4 Max, 48GB unified RAM. Memory budget with TurboQuant:
 
-```bash
-python3 -m unittest discover -s tests -v
-```
+| Component | Memory |
+|-----------|--------|
+| Gemma 4 26B-A4B Q4 | ~14 GB |
+| FunctionGemma 270M Q4 | ~150 MB |
+| KV cache 256K (TurboQuant 3-bit) | ~2.6 GB |
+| **Total** | **~21 GB** |
+| **Headroom** | **~27 GB** |
 
-Run the parity audit against the local ignored archive (when present):
+## License
 
-```bash
-python3 -m src.main parity-audit
-```
-
-Inspect mirrored command/tool inventories:
-
-```bash
-python3 -m src.main commands --limit 10
-python3 -m src.main tools --limit 10
-```
-
-## Current Parity Checkpoint
-
-The port now mirrors the archived root-entry file surface, top-level subsystem names, and command/tool inventories much more closely than before. However, it is **not yet** a full runtime-equivalent replacement for the original TypeScript system; the Python tree still contains fewer executable runtime slices than the archived source.
-
-
-## Built with `oh-my-codex`
-
-The restructuring and documentation work on this repository was AI-assisted and orchestrated with Yeachan Heo's [oh-my-codex (OmX)](https://github.com/Yeachan-Heo/oh-my-codex), layered on top of Codex.
-
-- **`$team` mode:** used for coordinated parallel review and architectural feedback
-- **`$ralph` mode:** used for persistent execution, verification, and completion discipline
-- **Codex-driven workflow:** used to turn the main `src/` tree into a Python-first porting workspace
-
-### OmX workflow screenshots
-
-![OmX workflow screenshot 1](assets/omx/omx-readme-review-1.png)
-
-*Ralph/team orchestration view while the README and essay context were being reviewed in terminal panes.*
-
-![OmX workflow screenshot 2](assets/omx/omx-readme-review-2.png)
-
-*Split-pane review and verification flow during the final README wording pass.*
-
-## Community
-
-<p align="center">
-  <a href="https://instruct.kr/"><img src="assets/instructkr.png" alt="instructkr" width="400" /></a>
-</p>
-
-Join the [**instructkr Discord**](https://instruct.kr/) — the best Korean language model community. Come chat about LLMs, harness engineering, agent workflows, and everything in between.
-
-[![Discord](https://img.shields.io/badge/Join%20Discord-instruct.kr-5865F2?logo=discord&style=for-the-badge)](https://instruct.kr/)
-
-## Star History
-
-See the chart at the top of this README.
-
-## Ownership / Affiliation Disclaimer
-
-- This repository does **not** claim ownership of the original Claude Code source material.
-- This repository is **not affiliated with, endorsed by, or maintained by Anthropic**.
+MIT
