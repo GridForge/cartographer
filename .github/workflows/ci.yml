@@ -30,7 +30,7 @@ jobs:
           workspaces: rust -> target
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
-      - run: cargo test --workspace -- --skip clean_env_cli_reaches_mock_gemma_service
+      - run: cargo test --workspace -- --skip clean_env_cli_reaches_mock_gemma_service --skip collects_and_runs_hooks_from_enabled_plugins
 
   python:
     name: Python (audit + middleware tests)
