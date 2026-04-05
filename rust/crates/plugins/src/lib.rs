@@ -18,7 +18,7 @@ const BUNDLED_MARKETPLACE: &str = "bundled";
 const SETTINGS_FILE_NAME: &str = "settings.json";
 const REGISTRY_FILE_NAME: &str = "installed.json";
 const MANIFEST_FILE_NAME: &str = "plugin.json";
-const MANIFEST_RELATIVE_PATH: &str = ".claude-plugin/plugin.json";
+const MANIFEST_RELATIVE_PATH: &str = ".carto-plugins/plugin.json";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -309,14 +309,14 @@ impl PluginTool {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .env("CLAWD_PLUGIN_ID", &self.plugin_id)
-            .env("CLAWD_PLUGIN_NAME", &self.plugin_name)
-            .env("CLAWD_TOOL_NAME", &self.definition.name)
-            .env("CLAWD_TOOL_INPUT", &input_json);
+            .env("CARTO_PLUGIN_ID", &self.plugin_id)
+            .env("CARTO_PLUGIN_NAME", &self.plugin_name)
+            .env("CARTO_TOOL_NAME", &self.definition.name)
+            .env("CARTO_TOOL_INPUT", &input_json);
         if let Some(root) = &self.root {
             process
                 .current_dir(root)
-                .env("CLAWD_PLUGIN_ROOT", root.display().to_string());
+                .env("CARTO_PLUGIN_ROOT", root.display().to_string());
         }
 
         let mut child = process.spawn()?;
@@ -2350,7 +2350,7 @@ mod tests {
         let script_path = root.join("tools").join("echo-json.sh");
         write_file(
             &script_path,
-            "#!/bin/sh\nINPUT=$(cat)\nprintf '{\"plugin\":\"%s\",\"tool\":\"%s\",\"input\":%s}\\n' \"$CLAWD_PLUGIN_ID\" \"$CLAWD_TOOL_NAME\" \"$INPUT\"\n",
+            "#!/bin/sh\nINPUT=$(cat)\nprintf '{\"plugin\":\"%s\",\"tool\":\"%s\",\"input\":%s}\\n' \"$CARTO_PLUGIN_ID\" \"$CARTO_TOOL_NAME\" \"$INPUT\"\n",
         );
         #[cfg(unix)]
         {

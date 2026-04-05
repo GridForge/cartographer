@@ -23,14 +23,14 @@ pub struct CapturedRequest {
     pub raw_body: String,
 }
 
-pub struct MockAnthropicService {
+pub struct MockGemmaService {
     base_url: String,
     requests: Arc<Mutex<Vec<CapturedRequest>>>,
     shutdown: Option<oneshot::Sender<()>>,
     join_handle: JoinHandle<()>,
 }
 
-impl MockAnthropicService {
+impl MockGemmaService {
     pub async fn spawn() -> io::Result<Self> {
         Self::spawn_on("127.0.0.1:0").await
     }
@@ -77,7 +77,7 @@ impl MockAnthropicService {
     }
 }
 
-impl Drop for MockAnthropicService {
+impl Drop for MockGemmaService {
     fn drop(&mut self) {
         if let Some(shutdown) = self.shutdown.take() {
             let _ = shutdown.send(());

@@ -147,7 +147,7 @@ impl CliApp {
 
     pub fn run_repl(&mut self) -> io::Result<()> {
         let mut editor = LineEditor::new("› ", Vec::new());
-        println!("Rusty Claude CLI interactive mode");
+        println!("Cartographer interactive mode");
         println!("Type /help for commands. Shift+Enter or Ctrl+J inserts a newline.");
 
         loop {

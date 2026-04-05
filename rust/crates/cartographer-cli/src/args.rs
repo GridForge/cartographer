@@ -4,9 +4,9 @@ use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Clone, Parser, PartialEq, Eq)]
 #[command(
-    name = "rusty-claude-cli",
+    name = "cartographer-cli",
     version,
-    about = "Rust Claude CLI prototype"
+    about = "Cartographer CLI — Gemma harness explorer"
 )]
 pub struct Cli {
     #[arg(long, default_value = "claude-opus-4-6")]
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn parses_requested_flags() {
         let cli = Cli::parse_from([
-            "rusty-claude-cli",
+            "cartographer-cli",
             "--model",
             "claude-3-5-haiku",
             "--permission-mode",
@@ -93,16 +93,16 @@ mod tests {
 
     #[test]
     fn parses_login_and_logout_commands() {
-        let login = Cli::parse_from(["rusty-claude-cli", "login"]);
+        let login = Cli::parse_from(["cartographer-cli", "login"]);
         assert_eq!(login.command, Some(Command::Login));
 
-        let logout = Cli::parse_from(["rusty-claude-cli", "logout"]);
+        let logout = Cli::parse_from(["cartographer-cli", "logout"]);
         assert_eq!(logout.command, Some(Command::Logout));
     }
 
     #[test]
     fn defaults_to_danger_full_access_permission_mode() {
-        let cli = Cli::parse_from(["rusty-claude-cli"]);
+        let cli = Cli::parse_from(["cartographer-cli"]);
         assert_eq!(cli.permission_mode, PermissionMode::DangerFullAccess);
     }
 }
