@@ -226,6 +226,12 @@ impl HarnessWorkspace {
         fs::create_dir_all(&self.root)?;
         fs::create_dir_all(&self.config_home)?;
         fs::create_dir_all(&self.home)?;
+        // Disable sandbox so tests pass on Linux CI where unshare --user
+        // is enabled by default but fails in minimal environments.
+        fs::write(
+            self.config_home.join("settings.json"),
+            r#"{"sandbox":{"enabled":false}}"#,
+        )?;
         Ok(())
     }
 }
@@ -265,8 +271,10 @@ fn run_case(case: ScenarioCase, workspace: &HarnessWorkspace, base_url: &str) ->
         .env("ANTHROPIC_BASE_URL", base_url)
         .env("CLAW_CONFIG_HOME", &workspace.config_home)
         .env("HOME", &workspace.home)
+        .env("LANG", "C.UTF-8")
         .env("NO_COLOR", "1")
-        .env("PATH", "/usr/bin:/bin")
+        .env("PATH", "/usr/local/bin:/usr/bin:/bin")
+        .env("TERM", "dumb")
         .args([
             "--model",
             "sonnet",

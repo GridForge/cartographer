@@ -4032,11 +4032,10 @@ mod tests {
     }
 
     fn temp_path(name: &str) -> PathBuf {
-        let unique = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("time")
-            .as_nanos();
-        std::env::temp_dir().join(format!("clawd-tools-{unique}-{name}"))
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!("carto-tools-{}-{id}-{name}", std::process::id()))
     }
 
     #[test]
@@ -4912,6 +4911,19 @@ mod tests {
 
     #[test]
     fn bash_tool_reports_success_exit_failure_timeout_and_background() {
+        let _guard = env_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let root = temp_path("bash-suite");
+        fs::create_dir_all(root.join(".claw")).expect("create .claw dir");
+        fs::write(
+            root.join(".claw").join("settings.json"),
+            r#"{"sandbox":{"enabled":false}}"#,
+        )
+        .expect("write sandbox-disable config");
+        let original_dir = std::env::current_dir().expect("cwd");
+        std::env::set_current_dir(&root).expect("set cwd");
+
         let success = execute_tool("bash", &json!({ "command": "printf 'hello'" }))
             .expect("bash should succeed");
         let success_output: serde_json::Value = serde_json::from_str(&success).expect("json");
@@ -4945,6 +4957,9 @@ mod tests {
         let background_output: serde_json::Value = serde_json::from_str(&background).expect("json");
         assert!(background_output["backgroundTaskId"].as_str().is_some());
         assert_eq!(background_output["noOutputExpected"], true);
+
+        std::env::set_current_dir(&original_dir).expect("restore cwd");
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]
@@ -5407,6 +5422,11 @@ mod tests {
 
     #[test]
     fn repl_executes_python_code() {
+        // Skip if python is not available (e.g., minimal CI without setup-python)
+        if !super::command_exists("python3") && !super::command_exists("python") {
+            eprintln!("SKIP: python not available, skipping REPL test");
+            return;
+        }
         let result = execute_tool(
             "REPL",
             &json!({"language": "python", "code": "print(1 + 1)", "timeout_ms": 500}),
