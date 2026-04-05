@@ -52,10 +52,35 @@ Expedition CITADEL established CI but skipped 5 shell-spawning integration tests
 | Testability | 12/15 | REPL skip guard needed |
 | Minimality | 9/10 | |
 
+### D-024: EPIPE handling in hook stdin write (production bug found by CI)
+- **Context**: After fixing the 5 test issues, CI revealed a 6th failure: `collects_and_runs_hooks_from_enabled_plugins` fails with "Broken pipe (os error 32)". The `output_with_stdin` method in `hooks.rs` writes JSON payload to the child process stdin. On Linux, hook scripts that don't read stdin (e.g., `printf`-only) exit before the parent finishes writing, causing EPIPE.
+- **Decision**: Ignore `ErrorKind::BrokenPipe` on stdin `write_all`. Propagate all other IO errors. This is a legitimate production bug, not just a test issue — any hook script that exits fast on Linux would trigger this.
+- **Rationale**: The child process may not need stdin. EPIPE on stdin is informational, not fatal. The child's exit code and stdout/stderr are the meaningful results.
+- **Status**: Implemented. CI green.
+
 ## Verification Results
-*Pending implementation.*
+
+| Check | Result |
+|-------|--------|
+| `cargo fmt --all --check` | Clean |
+| `cargo clippy --workspace -- -D warnings` | Clean |
+| `cargo test --workspace` (local) | 446 passed, 0 failed |
+| CI: Rust job (ubuntu-latest) | **Green** — fmt + clippy + full `cargo test --workspace` (no skips) |
+| CI: Python job (ubuntu-latest) | **Green** — 27/27 tests |
+| Previously skipped tests on CI | All 5 now passing: `initialize_repo` ✓, `clean_env_cli` ✓, `collects_and_runs_hooks` ✓, `bash_tool` ✓, `repl_python` ✓ |
+
+### CI run evidence
+- PR: GridForge/cartographer#1
+- Run: green on both jobs (Rust 48s, Python 15s)
+- All `--skip` flags removed from CI workflow
+- EPIPE fix surfaced and resolved a real production bug
 
 ## Open Items
-- Implementation pending
-- Docker-based Linux verification recommended before pushing
-- Council validation of completed log pending
+- Council validation of this log entry pending
+
+## Council Validation Status
+- [x] Implementation matches investigation findings
+- [x] CI green on ubuntu-latest with zero skips
+- [x] All 5 previously-skipped tests passing
+- [x] EPIPE production bug found and fixed
+- [ ] Adversarial documentation validation pending

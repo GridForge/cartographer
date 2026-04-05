@@ -10,7 +10,7 @@ Foundation log (2026-04-04) is pending gate acceptance. CITADEL was identified a
 
 ### Existing CI Gaps (Rust specialist finding)
 - Current `.github/workflows/rust-ci.yml` only runs `cargo fmt` + `cargo test -p cartographer-cli`
-- **453 test annotations across 47 files** — CI exercises only one crate out of 10
+- **~450 test annotations across the workspace** (point-in-time estimate from Rust specialist) — CI exercised only one crate
 - No clippy job despite workspace-level pedantic lints
 - rusqlite `bundled` compiles SQLite from C: ~60-90s cold, negligible with `Swatinem/rust-cache`
 - Zero macOS-specific dependencies in Rust — all tests run on ubuntu-latest
@@ -96,7 +96,11 @@ RPN 120 on failure mode 3 is the accepted gap. CI covers compilation parity, not
 - Old `rust-ci.yml` deleted locally, needs to be committed
 - Council validation of this log entry pending after CI green
 
+## Post-CITADEL Note
+CITADEL initially shipped with 5 shell-spawning integration tests skipped (FMEA failure mode #3, RPN 120). Expedition RAMPART subsequently fixed all 5 tests and removed all `--skip` flags. CI now runs full `cargo test --workspace` with zero exclusions. The initial CI skip strategy (commits 284cea6→f52c78f) was an interim measure resolved by RAMPART (commit 899eefe + 9ccd22d).
+
 ## Council Validation Status
 - [x] Implementation matches investigation findings (single file, two jobs, no macOS, MLX optional)
-- [ ] CI green on main (needs push)
-- [ ] Engineering log closed and validated
+- [x] CI green on PR (GridForge/cartographer#1 — both jobs green)
+- [x] All `--skip` flags removed by expedition RAMPART
+- [x] Staleness cross-referenced to RAMPART

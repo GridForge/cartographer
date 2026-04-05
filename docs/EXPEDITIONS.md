@@ -16,8 +16,8 @@ No expedition begins without an engineering log entry. No log entry closes witho
 BASECAMP ✓
   └── DEEP-STORE ✓
         └── CITADEL ✓
-              └── RAMPART ← you are here (CI integration tests)
-                    └── FIRST-LIGHT
+              └── RAMPART ✓
+                    └── FIRST-LIGHT ← next
                     ├── WATCHTOWER
                     ├── LENS
                     ├── SECOND-SIGHT
@@ -32,8 +32,8 @@ BASECAMP ✓
 | BASECAMP | Audit telemetry, MCP server, Python MLX service skeleton, engineering discipline, 10 commandments | None | MCP server responds to JSON-RPC, audit events emit, 51+ tests pass | **Complete** |
 | DEEP-STORE | SQLite FTS5 context persistence — Claude Code's memory layer | BASECAMP complete | `context_store` persists to SQLite, `context_query` returns FTS5 results, 8 store tests pass | **Complete** |
 | CITADEL | CI pipeline — automated regression detection for full Rust workspace + MLX-free Python tests | DEEP-STORE complete | Green CI on main: fmt + clippy + `cargo test --workspace` + `pytest test_audit.py`. `pyproject.toml` MLX optional. | **Complete** |
-| RAMPART | Fix 5 skipped integration tests — sandbox config, temp dir collisions, python setup | CITADEL complete | All `--skip` flags removed from CI. Full `cargo test --workspace` green on ubuntu-latest. | **Next** |
-| FIRST-LIGHT | Download models, register MCP in Claude Code settings, validate end-to-end: Claude Code → MCP → Python inference → response | CITADEL complete | Claude Code discovers Cartographer tools. `generate` returns Gemma output. `route` classifies a request. Full round-trip works in a live session. | Planned |
+| RAMPART | Fix 5 skipped integration tests + EPIPE production bug — sandbox config, temp dir collisions, python setup | CITADEL complete | All `--skip` flags removed. Full `cargo test --workspace` green on ubuntu-latest. EPIPE bug fixed. | **Complete** |
+| FIRST-LIGHT | Download models, register MCP in Claude Code settings, validate end-to-end: Claude Code → MCP → Python inference → response | RAMPART complete | Claude Code discovers Cartographer tools. `generate` returns Gemma output. `route` classifies a request. Full round-trip works in a live session. | Planned |
 | WATCHTOWER | Background monitoring — file watcher triggers `cargo test`, git tracker polls changes, context budget warns on threshold | FIRST-LIGHT complete | File save triggers test run, results stored in context. `monitor_status` returns last test result and recent git changes. | Planned |
 | LENS | Pre-processing pipeline — bundled PreToolUse hook, Gemma summarizes large files, error triage, diff analysis | FIRST-LIGHT complete | Claude Code reads a >500 line file, hook fires, summary prepended to context. Token savings measurable. | Planned |
 | SECOND-SIGHT | Council augmentation — `gemma-council.sh`, Gemma reviews with full session context, outputs council JSON schema | FIRST-LIGHT complete | Council invocation dispatches to Gemma alongside Codex. Gemma output references session history that Codex doesn't have. | Planned |
@@ -42,10 +42,12 @@ BASECAMP ✓
 
 ## Dependency Graph
 
-CITADEL → FIRST-LIGHT is the critical path. Everything after FIRST-LIGHT is independent and parallel.
+RAMPART → FIRST-LIGHT is the critical path. Everything after FIRST-LIGHT is independent and parallel.
 
-- **CITADEL** before FIRST-LIGHT: CI safety net before adding model deps and MCP registration
-- **FIRST-LIGHT** after CITADEL: models + MCP wiring, protected by CI
+- **BASECAMP** → **DEEP-STORE**: foundation + persistence
+- **CITADEL**: CI pipeline (initially shipped with test skips)
+- **RAMPART**: fixed all skipped tests + EPIPE production bug. CI now green with zero exclusions.
+- **FIRST-LIGHT** after RAMPART: models + MCP wiring, fully protected by CI
 - Post-FIRST-LIGHT: all independent, all protected by CI
   - WATCHTOWER: test watching, git tracking (core loop doesn't need models)
   - LENS: file summaries via Gemma (needs models)
@@ -55,7 +57,7 @@ CITADEL → FIRST-LIGHT is the critical path. Everything after FIRST-LIGHT is in
 
 ## Decision Registry
 
-Decisions are globally sequential. See `docs/engineering-log/INDEX.md` for the full registry. Current highest: **D-016**.
+Decisions are globally sequential. See `docs/engineering-log/INDEX.md` for the full registry. Current highest: **D-024**.
 
 ## How to Use This Document
 

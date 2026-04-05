@@ -1,7 +1,7 @@
-# Engineering Log: 2026-04-04 — Foundation Build
+# Engineering Log: 2026-04-04 — Foundation Build (BASECAMP + DEEP-STORE)
 
 ## Session Summary
-Built the Cartographer local intelligence layer foundation: Python MLX service (FastAPI with Gemma 4 + FunctionGemma), Rust MCP context server (5 tools, JSON-RPC stdio), aerospace-grade audit telemetry (typed events, hash-chaining, cross-process correlation), and 51 tests. Council-reviewed the audit architecture with unanimous agreement on critical gaps.
+Built the Cartographer local intelligence layer foundation: Python MLX service (FastAPI with Gemma 4 + FunctionGemma), Rust MCP context server (5 tools, JSON-RPC stdio), aerospace-grade audit telemetry (typed events, hash-chaining, cross-process correlation), and SQLite FTS5 context persistence. Council-reviewed the audit architecture with unanimous agreement on critical gaps. Judge-approved persistence at 96%.
 
 ## Decisions Made
 
@@ -185,15 +185,18 @@ Designed the SQLite FTS5 persistence layer for `context_store`/`context_query` t
 
 ## Verification Results (Phase 3)
 
-Independently verified during council validation closure:
+Verified at end of session (includes both BASECAMP and DEEP-STORE):
 
 | Suite | Tests | Result | Verified |
 |-------|-------|--------|----------|
 | Rust context-server | 19 (9 mcp_handler + 8 store + 2 inference) | All pass | `cargo test -p context-server`: "19 passed" |
 | Rust telemetry | 13 | All pass | `cargo test -p telemetry`: "13 passed" |
-| Python audit system | 27 | All pass | Previously verified via pytest |
-| cargo clippy --workspace -D warnings | — | Clean | Verified: "Finished dev profile" with zero warnings |
-| cargo fmt --all --check | — | Clean | Previously verified |
+| Rust full workspace | 446 total | All pass | `cargo test --workspace` (post-RAMPART count at HEAD) |
+| Python audit system | 27 | All pass | `pytest tests/test_audit.py -v`: "27 passed" |
+| cargo clippy --workspace -D warnings | — | Clean | Zero warnings |
+| cargo fmt --all --check | — | Clean | No diffs |
+
+**Note**: Test counts are cumulative at session end. The initial BASECAMP phase produced ~59 Rust + 27 Python tests. DEEP-STORE added 8 store tests. Later expeditions (CITADEL, RAMPART) added further test fixes and ran the full workspace.
 
 **Artifact locations (corrected per council finding):**
 - SQLite database: `~/.local/share/cartographer/context.db` (NOT `store.db` — council caught this naming error)

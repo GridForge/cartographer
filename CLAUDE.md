@@ -11,9 +11,16 @@ Cartographer — local intelligence layer for Claude Code. Gemma 4 26B + Functio
 - Python service: `python/cartographer_mlx/` (FastAPI MLX inference service)
 
 ## Verification
+
+**Local (before any commit):**
 - Rust: `cd rust && cargo fmt --all && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace`
-- Python: `cd python && python -m pytest tests/ -v`
-- Both must pass before any commit.
+- Python: `cd python && pip install -e ".[all]" && python -m pytest tests/ -v`
+
+**CI (GitHub Actions, ubuntu-latest):**
+- Rust: fmt + clippy + `cargo test --workspace` (full, no skips)
+- Python: `pip install ".[dev]"` (no MLX) + `pytest tests/test_audit.py -v` (MLX-free tests only)
+
+CI does not test MLX inference paths (requires Apple Silicon). MLX validation is local-only, recorded in the engineering log.
 
 ## Repository shape
 - `rust/` — Rust workspace: MCP context server, telemetry, CLI, runtime

@@ -3,14 +3,14 @@
 Reverse-chronological. Each entry records session-level decisions, council findings, and verification evidence per ADR-0008.
 
 ## Gate Status
-**Current**: 2026-04-04 foundation entry — fixes applied, awaiting acceptance. CITADEL log created (investigation phase, implementation pending).
+**Current**: Council documentation audit scored 58%. Fixes applied for: stale test counts, EXPEDITIONS dependency graph, CITADEL→RAMPART cross-reference, CLAUDE.md CI/local distinction, decision count (D-016→D-024). Awaiting re-validation.
 
 ## Entries
 
 | Date | Expedition | Title | Decisions | Council | Validated | Key Outcome |
 |------|-----------|-------|-----------|---------|-----------|-------------|
-| 2026-04-05 | RAMPART | [CI Integration Tests](expedition-RAMPART.md) | D-020 to D-023 | Yes (2x Judge: 64%→86%) | Pending impl | Fix 5 skipped tests: sandbox config, temp dirs, python setup |
-| 2026-04-05 | CITADEL | [CI Pipeline](expedition-CITADEL.md) | D-017 to D-019 | Yes (Codex + 2 Claude specialists + recommendations agent) | Complete | Unified ci.yml, MLX optional deps, CI green |
+| 2026-04-05 | RAMPART | [CI Integration Tests](expedition-RAMPART.md) | D-020 to D-024 | Yes (2x Judge: 64%→86%) | Pending validation | Fix 5 skipped tests + EPIPE production bug. CI green, zero skips. |
+| 2026-04-05 | CITADEL | [CI Pipeline](expedition-CITADEL.md) | D-017 to D-019 | Yes (Codex + 2 Claude specialists + recommendations agent) | Pending validation | Unified ci.yml, MLX optional deps, CI green |
 | 2026-04-04 | BASECAMP + DEEP-STORE | [Foundation Build](2026-04-04-foundation-build.md) | D-001 to D-016 | Yes (3x: audit, persistence, log validation) | FIXES APPLIED | Full audit telemetry, SQLite FTS5 persistence, 78 tests, 10 commandments, FMEA discipline |
 
 ## Decision Registry
@@ -39,4 +39,5 @@ Reverse-chronological. Each entry records session-level decisions, council findi
 | D-020 | Fix tests not production code | RAMPART | — | Approved |
 | D-021 | Sandbox disabled via test fixture config | RAMPART | — | Approved |
 | D-022 | Temp dir PID + atomic counter | RAMPART | — | Approved |
-| D-023 | Python setup in Rust CI job | RAMPART | — | Approved |
+| D-023 | Python setup in Rust CI job | RAMPART | — | Implemented |
+| D-024 | EPIPE handling in hook stdin (prod bug) | RAMPART | — | Implemented |
