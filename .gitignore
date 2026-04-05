@@ -2,6 +2,9 @@ __pycache__/
 archive/
 .omx/
 .carto-agents/
+*.egg-info/
+build/
+dist/
 # Cartographer local artifacts
 .claude/settings.local.json
 .claude/sessions/
