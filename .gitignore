@@ -6,5 +6,5 @@ archive/
 build/
 dist/
 # Cartographer local artifacts
-.claude/settings.local.json
-.claude/sessions/
+# Claude Code — only .claude.json (project config) is tracked
+.claude/
