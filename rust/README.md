@@ -1,89 +1,43 @@
-# Cartographer — Rust Implementation
+# Cartographer — Rust Workspace
 
-A high-performance Rust harness runtime for Gemma model orchestration. Built for speed, safety, and native tool execution.
+MCP context server, CLI runtime, audit telemetry, and tool execution for the Cartographer intelligence layer.
 
-## Quick Start
+## Crates
+
+| Crate | Purpose |
+|-------|---------|
+| **context-server** | MCP stdio server — 5 tools, SQLite FTS5 persistence, audit event emission |
+| **telemetry** | Audit events (16 types), hash-chaining, session tracing, JSONL sink |
+| **cartographer-cli** | CLI binary (`carto`) — REPL, one-shot prompt, streaming display |
+| **api** | HTTP client — Anthropic/OpenAI/XAI providers, SSE streaming |
+| **runtime** | Session management, config, permissions, bash execution, hooks, compaction |
+| **tools** | Built-in tool implementations — Bash, ReadFile, WriteFile, EditFile, Glob, Grep, Web |
+| **plugins** | Plugin system — registration, lifecycle, hook runner (PreToolUse/PostToolUse) |
+| **commands** | Slash command registry and parsing |
+| **compat-harness** | Upstream manifest extraction |
+| **mock-gemma-service** | Deterministic mock for end-to-end parity tests |
+
+## Quick start
 
 ```bash
-cd rust/
 cargo build --release
 
-# Run interactive REPL
+# Run the MCP context server (Claude Code connects via stdio)
+./target/release/cartographer-context-server
+
+# Run the CLI
 ./target/release/carto
-
-# One-shot prompt
-./target/release/carto prompt "explain this codebase"
-
-# With specific model
-./target/release/carto --model sonnet prompt "fix the bug in main.rs"
 ```
 
-## Mock parity harness
-
-The workspace includes a deterministic mock service and a clean-environment CLI harness for end-to-end parity checks.
+## Verification
 
 ```bash
-cd rust/
-
-# Run the scripted clean-environment harness
-./scripts/run_mock_parity_harness.sh
-
-# Or start the mock service manually
-cargo run -p mock-gemma-service -- --bind 127.0.0.1:0
+cargo fmt --all --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
 ```
 
-## Workspace Layout
-
-```
-rust/
-├── Cargo.toml              # Workspace root
-├── Cargo.lock
-└── crates/
-    ├── api/                # API client + SSE streaming
-    ├── commands/           # Shared slash-command registry
-    ├── compat-harness/     # Manifest extraction harness
-    ├── mock-gemma-service/ # Deterministic local mock service
-    ├── runtime/            # Session, config, permissions, prompts
-    ├── cartographer-cli/   # Main CLI binary (`carto`)
-    ├── telemetry/          # Telemetry and request profiling
-    └── tools/              # Built-in tool implementations
-```
-
-### Crate Responsibilities
-
-- **api** — HTTP client, SSE stream parser, request/response types, auth
-- **commands** — Slash command definitions and help text generation
-- **compat-harness** — Extracts tool/prompt manifests from upstream source
-- **mock-gemma-service** — Deterministic `/v1/messages` mock for CLI parity tests
-- **runtime** — Agentic loop, config hierarchy, session persistence, permission policy, system prompt assembly
-- **cartographer-cli** — REPL, one-shot prompt, streaming display, tool call rendering, CLI argument parsing
-- **tools** — Tool specs + execution: Bash, ReadFile, WriteFile, EditFile, GlobSearch, GrepSearch, WebSearch, WebFetch, Agent, and more
-
-## CLI Flags
-
-```
-carto [OPTIONS] [COMMAND]
-
-Options:
-  --model MODEL                    Set the model (alias or full name)
-  --dangerously-skip-permissions   Skip all permission checks
-  --permission-mode MODE           Set read-only, workspace-write, or danger-full-access
-  --allowedTools TOOLS             Restrict enabled tools
-  --output-format FORMAT           Output format (text or json)
-  --version, -V                    Print version info
-
-Commands:
-  prompt <text>      One-shot prompt (non-interactive)
-  login              Authenticate via OAuth
-  logout             Clear stored credentials
-  init               Initialize project config
-```
-
-## Stats
-
-- **~20K lines** of Rust
-- **Binary name:** `carto`
-- **Default permissions:** `danger-full-access`
+All tests run on both macOS and Linux (ubuntu-latest CI).
 
 ## License
 
