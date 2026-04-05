@@ -23,6 +23,7 @@ dev = [
     "pytest>=7.0",
     "httpx",
     "pytest-asyncio",
+    "fastapi>=0.128",
 ]
 all = [
     "cartographer-mlx[mlx]",
