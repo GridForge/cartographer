@@ -339,7 +339,13 @@ impl CommandWithStdin {
         let mut child = self.command.spawn()?;
         if let Some(mut child_stdin) = child.stdin.take() {
             use std::io::Write as _;
-            child_stdin.write_all(stdin)?;
+            // Ignore BrokenPipe — the child may exit before reading stdin
+            // (e.g., hook scripts that use printf without reading input).
+            if let Err(e) = child_stdin.write_all(stdin) {
+                if e.kind() != std::io::ErrorKind::BrokenPipe {
+                    return Err(e);
+                }
+            }
         }
         child.wait_with_output()
     }
